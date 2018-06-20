@@ -12,7 +12,8 @@ var minimist = require("minimist");
 var gulpIf = require("gulp-if");
 var clean = require("gulp-clean");
 var sequence = require("gulp-sequence");
-
+const imagemin = require("gulp-imagemin");
+const data = require("gulp-data");
 var envOptions = {
     string: "env",
     default: {
@@ -26,6 +27,18 @@ console.log(options);
 gulp.task("jade", function() {
     return gulp
         .src("./source/**/*.jade")
+        .pipe(plumber())
+        .pipe(
+            data(function() {
+                var khData = require("./source/data/data.json");
+                var menu = require("./source/data/menu.json");
+                var source = {
+                    khData: khData,
+                    menu: menu
+                };
+                return source;
+            })
+        )
         .pipe(jade())
         .pipe(gulp.dest("./public/"));
 });
@@ -66,3 +79,10 @@ gulp.task("clean", function() {
 });
 
 gulp.task("build", sequence("clean", "sass"));
+
+gulp.task("imagemin", () =>
+    gulp
+        .src("./source/images/*")
+        .pipe(imagemin())
+        .pipe(gulp.dest("./public/images"))
+);
